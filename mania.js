@@ -31,19 +31,21 @@ function renderGrid(items, gid) {
     d.style.cssText = `opacity:0;animation:up .5s ${i * .06 + .05}s ease forwards`;
     d.innerHTML = `
       <img class="pc-img" src="${item.img}" alt="${item.name}" loading="lazy" />
-      <div class="pc-top">
-        <div class="pc-name">${item.name}</div>
-        <div class="pc-chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-      </div>
-      <div class="pc-desc">${item.desc}</div>
-      <div class="pc-foot">
-        <div class="pc-price"><small>R$</small>${item.price.toFixed(2).replace('.', ',')}</div>
-      </div>
-      <div class="qty-row" id="qr-${item.id}">
-        <button class="qb" id="qb-minus-${item.id}">−</button>
-        <span class="qn" id="qn-${item.id}">1</span>
-        <button class="qb" id="qb-plus-${item.id}">+</button>
-        <span class="qs" id="qs-${item.id}">R$ ${item.price.toFixed(2).replace('.', ',')}</span>
+      <div class="pc-body">
+        <div class="pc-top">
+          <div class="pc-name">${item.name}</div>
+          <div class="pc-chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        </div>
+        <div class="pc-desc">${item.desc}</div>
+        <div class="pc-foot">
+          <div class="pc-price"><small>R$</small>${item.price.toFixed(2).replace('.', ',')}</div>
+        </div>
+        <div class="qty-row" id="qr-${item.id}">
+          <button class="qb" id="qb-minus-${item.id}">−</button>
+          <span class="qn" id="qn-${item.id}">1</span>
+          <button class="qb" id="qb-plus-${item.id}">+</button>
+          <span class="qs" id="qs-${item.id}">R$ ${item.price.toFixed(2).replace('.', ',')}</span>
+        </div>
       </div>`;
 
     g.appendChild(d);
