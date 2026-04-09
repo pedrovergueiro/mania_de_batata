@@ -11,7 +11,7 @@ const catalog = {
     {id:'ad-ca',img:'imagens/calabresa.jpg',name:'Calabresa',desc:'Temperada com toque apimentado',price:3.99},
   ],
   bebidas:[
-    {id:'be-cl',img:'https://images.pexels.com/photos/50593/coca-cola-cold-drink-soft-drink-coke-50593.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',name:'Coca-Cola Lata 350ml',desc:'Gelada, do jeito certo',price:7.99},
+    {id:'be-cl',img:'imagens/coca-lata.jpg',name:'Coca-Cola Lata 350ml',desc:'Gelada, do jeito certo',price:7.99},
     {id:'be-c2',img:'imagens/coca.jpg',name:'Coca-Cola 2L',desc:'Para toda a família',price:17.99},
     {id:'be-fo',img:'imagens/fanta.jpg',name:'Fanta Laranja 2L',desc:'Refrescante e cítrica',price:14.99},
     {id:'be-gu',img:'imagens/guarana.jpg',name:'Guaraná 2L',desc:'Brasileiro e geladinho',price:14.99},
