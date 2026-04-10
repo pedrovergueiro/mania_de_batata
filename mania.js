@@ -19,6 +19,59 @@ const catalog = {
 };
 
 const cart = {};
+const STORAGE_KEY = 'mania_pedido';
+const EXPIRY_MS = 2 * 60 * 60 * 1000; // 2 horas
+
+// ── PERSISTÊNCIA ──
+function saveState() {
+  const payload = {
+    cart,
+    enderecoData,
+    currentPayMethod,
+    ts: Date.now()
+  };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const payload = JSON.parse(raw);
+    if (Date.now() - payload.ts > EXPIRY_MS) {
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+    // restore cart
+    Object.assign(cart, payload.cart || {});
+    // restore endereço
+    if (payload.enderecoData) Object.assign(enderecoData, payload.enderecoData);
+    // restore pay method
+    if (payload.currentPayMethod) currentPayMethod = payload.currentPayMethod;
+    // restore form fields after DOM ready
+    restoreForm();
+    // restore card selections visually
+    Object.keys(cart).forEach(id => {
+      const c = document.getElementById('pc-' + id);
+      if (c) {
+        c.classList.add('sel');
+        const n = document.getElementById('qn-' + id);
+        const s = document.getElementById('qs-' + id);
+        if (n) n.textContent = cart[id].qty;
+        if (s) s.textContent = 'R$ ' + (cart[id].price * cart[id].qty).toFixed(2).replace('.', ',');
+      }
+    });
+  } catch(e) {}
+}
+
+function restoreForm() {
+  if (!enderecoData.rua) return;
+  const fields = { 'f-rua': enderecoData.rua, 'f-num': enderecoData.num, 'f-comp': enderecoData.comp, 'f-bairro': enderecoData.bairro, 'f-ref': enderecoData.ref };
+  Object.entries(fields).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el && val) el.value = val;
+  });
+}
 
 function renderGrid(items, gid) {
   const g = document.getElementById(gid);
@@ -80,6 +133,7 @@ function toggleItem(item) {
     toast(item.name + ' adicionado ✓');
   }
   sync();
+  saveState();
 }
 
 function chq(id, delta) {
@@ -97,6 +151,7 @@ function chq(id, delta) {
     if (s) s.textContent = 'R$ ' + (cart[id].price * newQty).toFixed(2).replace('.', ',');
   }
   sync();
+  saveState();
 }
 
 function sync() {
@@ -128,7 +183,6 @@ function sync() {
       </div>`).join('');
     ft.style.display = 'block';
     document.getElementById('totval').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
-    document.getElementById('walink').href = buildWA(items, total);
   }
 }
 
@@ -137,23 +191,112 @@ function rem(id) {
   if (c) c.classList.remove('sel');
   delete cart[id];
   sync();
+  saveState();
 }
 
-function buildWA(items, total) {
+// state
+let currentPayMethod = '';
+let enderecoData = {};
+
+function goStep(step) {
+  // hide all
+  document.getElementById('pnbd').style.display = 'none';
+  document.getElementById('pnft').style.display = 'none';
+  ['endereco','pagamento','pix'].forEach(s => {
+    const el = document.getElementById('step-' + s);
+    if (el) el.style.display = 'none';
+  });
+
+  if (step === 'cart') {
+    document.getElementById('pnbd').style.display = '';
+    const items = Object.values(cart);
+    if (items.length) document.getElementById('pnft').style.display = '';
+  } else {
+    const el = document.getElementById('step-' + step);
+    if (el) el.style.display = 'flex';
+    if (step === 'pix') {
+      const total = Object.values(cart).reduce((s, i) => s + i.price * i.qty, 0);
+      document.getElementById('pix-valor').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+    }
+  }
+}
+
+function submitEndereco() {
+  const rua    = document.getElementById('f-rua').value.trim();
+  const num    = document.getElementById('f-num').value.trim();
+  const bairro = document.getElementById('f-bairro').value.trim();
+  if (!rua || !num || !bairro) {
+    alert('Preencha rua, número e bairro para continuar.');
+    return;
+  }
+  enderecoData = {
+    rua, num,
+    comp:   document.getElementById('f-comp').value.trim(),
+    bairro,
+    ref:    document.getElementById('f-ref').value.trim(),
+  };
+  saveState();
+  goStep('pagamento');
+}
+
+function selectPay(method) {
+  currentPayMethod = method;
+  saveState();
+  if (method === 'pix') {
+    goStep('pix');
+  } else {
+    sendWhatsApp();
+  }
+}
+
+function copyPix() {
+  navigator.clipboard.writeText('santoselines@gmail.com').then(() => {
+    const btn = document.getElementById('btn-copy');
+    btn.textContent = 'Copiado!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function sendWhatsApp() {
+  const items = Object.values(cart);
+  if (!items.length) return;
+  const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+
   let m = '🍟 *Pedido — Mania da Batata*\n\n';
+
   const batatas    = items.filter(i => i.id.startsWith('b-'));
   const adicionais = items.filter(i => i.id.startsWith('ad-'));
   const bebidas    = items.filter(i => i.id.startsWith('be-'));
   if (batatas.length)    { m += '*🥔 Batatas:*\n';    batatas.forEach(i    => { m += `  • ${i.name} ×${i.qty}  →  R$ ${(i.price*i.qty).toFixed(2).replace('.',',')}\n`; }); m += '\n'; }
   if (adicionais.length) { m += '*✦ Adicionais:*\n'; adicionais.forEach(i => { m += `  • ${i.name} ×${i.qty}  →  R$ ${(i.price*i.qty).toFixed(2).replace('.',',')}\n`; }); m += '\n'; }
   if (bebidas.length)    { m += '*🥤 Bebidas:*\n';    bebidas.forEach(i    => { m += `  • ${i.name} ×${i.qty}  →  R$ ${(i.price*i.qty).toFixed(2).replace('.',',')}\n`; }); m += '\n'; }
-  m += `💰 *Total: R$ ${total.toFixed(2).replace('.', ',')}*\n\n_Pedido feito pelo site._`;
-  return 'https://wa.me/5535984775725?text=' + encodeURIComponent(m);
+
+  m += `💰 *Total: R$ ${total.toFixed(2).replace('.', ',')}*\n\n`;
+
+  // endereço
+  m += `📍 *Endereço de entrega:*\n`;
+  m += `  ${enderecoData.rua}, ${enderecoData.num}`;
+  if (enderecoData.comp) m += ` — ${enderecoData.comp}`;
+  m += `\n  Bairro: ${enderecoData.bairro}`;
+  if (enderecoData.ref) m += `\n  Referência: ${enderecoData.ref}`;
+  m += '\n\n';
+
+  // pagamento
+  const payLabels = { pix: 'PIX ✅ (comprovante enviado em seguida)', dinheiro: 'Dinheiro 💵 (pagar na entrega)', cartao: 'Cartão 💳 (pagar na entrega)' };
+  m += `💳 *Pagamento:* ${payLabels[currentPayMethod] || currentPayMethod}\n\n`;
+  m += `_Pedido feito pelo site._`;
+
+  window.open('https://wa.me/5535984775725?text=' + encodeURIComponent(m), '_blank');
+  // limpa estado após enviar
+  localStorage.removeItem(STORAGE_KEY);
 }
 
 function togglePanel() {
+  const isOpen = document.getElementById('panel').classList.contains('on');
   document.getElementById('overlay').classList.toggle('on');
   document.getElementById('panel').classList.toggle('on');
+  if (!isOpen) goStep('cart'); // always start at cart view
 }
 
 function goSec(id, btn) {
@@ -183,4 +326,5 @@ function toast(msg) {
 renderGrid(catalog.batatas,    'g-batatas');
 renderGrid(catalog.adicionais, 'g-adicionais');
 renderGrid(catalog.bebidas,    'g-bebidas');
+loadState();
 sync();
