@@ -28,6 +28,7 @@ function saveState() {
     cart,
     enderecoData,
     currentPayMethod,
+    tipoEntrega,
     ts: Date.now()
   };
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch(e) {}
@@ -48,6 +49,7 @@ function loadState() {
     if (payload.enderecoData) Object.assign(enderecoData, payload.enderecoData);
     // restore pay method
     if (payload.currentPayMethod) currentPayMethod = payload.currentPayMethod;
+    if (payload.tipoEntrega) tipoEntrega = payload.tipoEntrega;
     // restore form fields after DOM ready
     restoreForm();
     // restore card selections visually
@@ -172,6 +174,9 @@ function sync() {
     bd.innerHTML = `<div class="empty"><div class="eic">🛒</div><p>Nenhum item ainda.<br>Escolha algo do cardápio.</p></div>`;
     ft.style.display = 'none';
   } else {
+    const subtotal = total;
+    const frete = tipoEntrega === 'entrega' ? FRETE : 0;
+    const totalFinal = subtotal + frete;
     bd.innerHTML = items.map(i => `
       <div class="ci">
         <img src="${i.img}" alt="${i.name}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0" />
@@ -180,9 +185,14 @@ function sync() {
           <div class="ci-price">R$ ${(i.price * i.qty).toFixed(2).replace('.', ',')}</div>
           <button class="ci-rm" onclick="rem('${i.id}')">remover</button>
         </div>
-      </div>`).join('');
+      </div>`).join('') + (frete > 0 ? `
+      <div class="ci">
+        <div style="width:44px;height:44px;border-radius:8px;background:var(--amber-dim);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🛵</div>
+        <div class="ci-meta"><div class="ci-name">Taxa de entrega</div></div>
+        <div class="ci-right"><div class="ci-price">R$ 5,00</div></div>
+      </div>` : '');
     ft.style.display = 'block';
-    document.getElementById('totval').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+    document.getElementById('totval').textContent = 'R$ ' + totalFinal.toFixed(2).replace('.', ',');
   }
 }
 
@@ -197,6 +207,30 @@ function rem(id) {
 // state
 let currentPayMethod = '';
 let enderecoData = {};
+let tipoEntrega = 'entrega'; // 'entrega' | 'retirada'
+const FRETE = 5.00;
+
+function setDelivery(tipo) {
+  tipoEntrega = tipo;
+  document.getElementById('btn-entrega').classList.toggle('active', tipo === 'entrega');
+  document.getElementById('btn-retirada').classList.toggle('active', tipo === 'retirada');
+  document.getElementById('campos-endereco').style.display = tipo === 'entrega' ? '' : 'none';
+  document.getElementById('frete-info').style.display = tipo === 'entrega' ? '' : 'none';
+  document.getElementById('retirada-info').style.display = tipo === 'retirada' ? '' : 'none';
+  saveState();
+  updateTotals();
+}
+
+function updateTotals() {
+  const items = Object.values(cart);
+  const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
+  const frete = tipoEntrega === 'entrega' ? FRETE : 0;
+  const total = subtotal + frete;
+  const el = document.getElementById('totval');
+  if (el) el.textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+  const pixEl = document.getElementById('pix-valor');
+  if (pixEl) pixEl.textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+}
 
 function goStep(step) {
   // hide all
@@ -215,26 +249,31 @@ function goStep(step) {
     const el = document.getElementById('step-' + step);
     if (el) el.style.display = 'flex';
     if (step === 'pix') {
-      const total = Object.values(cart).reduce((s, i) => s + i.price * i.qty, 0);
-      document.getElementById('pix-valor').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+      const subtotal = Object.values(cart).reduce((s, i) => s + i.price * i.qty, 0);
+      const frete = tipoEntrega === 'entrega' ? FRETE : 0;
+      document.getElementById('pix-valor').textContent = 'R$ ' + (subtotal + frete).toFixed(2).replace('.', ',');
     }
   }
 }
 
 function submitEndereco() {
-  const rua    = document.getElementById('f-rua').value.trim();
-  const num    = document.getElementById('f-num').value.trim();
-  const bairro = document.getElementById('f-bairro').value.trim();
-  if (!rua || !num || !bairro) {
-    alert('Preencha rua, número e bairro para continuar.');
-    return;
+  if (tipoEntrega === 'entrega') {
+    const rua    = document.getElementById('f-rua').value.trim();
+    const num    = document.getElementById('f-num').value.trim();
+    const bairro = document.getElementById('f-bairro').value.trim();
+    if (!rua || !num || !bairro) {
+      alert('Preencha rua, número e bairro para continuar.');
+      return;
+    }
+    enderecoData = {
+      rua, num,
+      comp:   document.getElementById('f-comp').value.trim(),
+      bairro,
+      ref:    document.getElementById('f-ref').value.trim(),
+    };
+  } else {
+    enderecoData = {};
   }
-  enderecoData = {
-    rua, num,
-    comp:   document.getElementById('f-comp').value.trim(),
-    bairro,
-    ref:    document.getElementById('f-ref').value.trim(),
-  };
   saveState();
   goStep('pagamento');
 }
@@ -261,7 +300,9 @@ function copyPix() {
 function sendWhatsApp() {
   const items = Object.values(cart);
   if (!items.length) return;
-  const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+  const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
+  const frete = tipoEntrega === 'entrega' ? FRETE : 0;
+  const total = subtotal + frete;
 
   let m = '🍟 *Pedido — Mania da Batata*\n\n';
 
@@ -272,14 +313,18 @@ function sendWhatsApp() {
   if (adicionais.length) { m += '*✦ Adicionais:*\n'; adicionais.forEach(i => { m += `  • ${i.name} ×${i.qty}  →  R$ ${(i.price*i.qty).toFixed(2).replace('.',',')}\n`; }); m += '\n'; }
   if (bebidas.length)    { m += '*🥤 Bebidas:*\n';    bebidas.forEach(i    => { m += `  • ${i.name} ×${i.qty}  →  R$ ${(i.price*i.qty).toFixed(2).replace('.',',')}\n`; }); m += '\n'; }
 
+  if (frete > 0) m += `🛵 *Taxa de entrega:* R$ 5,00\n\n`;
   m += `💰 *Total: R$ ${total.toFixed(2).replace('.', ',')}*\n\n`;
 
-  // endereço
-  m += `📍 *Endereço de entrega:*\n`;
-  m += `  ${enderecoData.rua}, ${enderecoData.num}`;
-  if (enderecoData.comp) m += ` — ${enderecoData.comp}`;
-  m += `\n  Bairro: ${enderecoData.bairro}`;
-  if (enderecoData.ref) m += `\n  Referência: ${enderecoData.ref}`;
+  if (tipoEntrega === 'entrega') {
+    m += `📍 *Endereço de entrega:*\n`;
+    m += `  ${enderecoData.rua}, ${enderecoData.num}`;
+    if (enderecoData.comp) m += ` — ${enderecoData.comp}`;
+    m += `\n  Bairro: ${enderecoData.bairro}`;
+    if (enderecoData.ref) m += `\n  Referência: ${enderecoData.ref}`;
+  } else {
+    m += `🏃 *Retirada no local*`;
+  }
   m += '\n\n';
 
   // pagamento

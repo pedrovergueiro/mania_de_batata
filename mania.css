@@ -630,7 +630,40 @@ footer {
 .btn-voltar:active { border-color: var(--amber); color: var(--amber); }
 .btn-pago { flex: 1; background: linear-gradient(135deg, #25D366, #20B85A); box-shadow: 0 6px 20px rgba(37,211,102,.3); }
 
-/* fields */
+/* delivery toggle */
+.delivery-toggle {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-bottom: 16px;
+}
+.dtoggle-btn {
+  padding: 14px 10px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); color: var(--text-2);
+  font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600;
+  cursor: pointer; text-align: center;
+  transition: all .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.dtoggle-btn.active {
+  background: var(--amber-dim); border-color: var(--amber); color: var(--amber);
+}
+.frete-info {
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(232,134,26,.08); border: 1px solid rgba(232,134,26,.25);
+  border-radius: 10px; padding: 10px 14px;
+  font-size: .82rem; color: var(--text-2);
+  margin-bottom: 16px;
+}
+.frete-info strong { color: var(--amber); }
+.retirada-box {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 18px 16px;
+  margin-top: 8px;
+}
+.retirada-ic { font-size: 1.8rem; flex-shrink: 0; }
+.retirada-title { font-size: .95rem; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+.retirada-desc { font-size: .78rem; color: var(--text-3); line-height: 1.5; }
 .field-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
 .field-group label {
   font-size: .72rem; font-weight: 700; color: var(--text-2);

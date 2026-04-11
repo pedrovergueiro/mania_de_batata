@@ -127,27 +127,50 @@
       <span>Endereço de entrega</span>
     </div>
     <div class="step-body">
-      <div class="field-group">
-        <label>Rua *</label>
-        <input type="text" id="f-rua" placeholder="Ex: Rua das Flores" />
+      <div class="delivery-toggle">
+        <button class="dtoggle-btn active" id="btn-entrega" onclick="setDelivery('entrega')">
+          🛵 Entrega
+        </button>
+        <button class="dtoggle-btn" id="btn-retirada" onclick="setDelivery('retirada')">
+          🏃 Retirar no local
+        </button>
       </div>
-      <div class="field-row">
+      <div class="frete-info" id="frete-info">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Taxa de entrega: <strong>R$ 5,00</strong>
+      </div>
+      <div id="campos-endereco">
         <div class="field-group">
-          <label>Número *</label>
-          <input type="text" id="f-num" placeholder="Ex: 123" />
+          <label>Rua *</label>
+          <input type="text" id="f-rua" placeholder="Ex: Rua das Flores" />
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Número *</label>
+            <input type="text" id="f-num" placeholder="Ex: 123" />
+          </div>
+          <div class="field-group">
+            <label>Complemento</label>
+            <input type="text" id="f-comp" placeholder="Apto, bloco..." />
+          </div>
         </div>
         <div class="field-group">
-          <label>Complemento</label>
-          <input type="text" id="f-comp" placeholder="Apto, bloco..." />
+          <label>Bairro *</label>
+          <input type="text" id="f-bairro" placeholder="Ex: Centro" />
+        </div>
+        <div class="field-group">
+          <label>Ponto de referência <span class="opt-label">(opcional)</span></label>
+          <input type="text" id="f-ref" placeholder="Ex: Próximo ao mercado..." />
         </div>
       </div>
-      <div class="field-group">
-        <label>Bairro *</label>
-        <input type="text" id="f-bairro" placeholder="Ex: Centro" />
-      </div>
-      <div class="field-group">
-        <label>Ponto de referência <span class="opt-label">(opcional)</span></label>
-        <input type="text" id="f-ref" placeholder="Ex: Próximo ao mercado..." />
+      <div class="retirada-info" id="retirada-info" style="display:none">
+        <div class="retirada-box">
+          <span class="retirada-ic">📍</span>
+          <div>
+            <div class="retirada-title">Retirada no local</div>
+            <div class="retirada-desc">Seu pedido ficará pronto para retirada. Aguarde a confirmação pelo WhatsApp.</div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="step-ft">
