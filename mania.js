@@ -1,14 +1,14 @@
 const catalog = {
   batatas:[
-    {id:'b-p',img:'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&q=80',name:'Batata Frita P',desc:'Porção individual, crocante e sequinha',price:10.99},
-    {id:'b-m',img:'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400&q=80',name:'Batata Frita M',desc:'Para matar a fome com estilo',price:15.99},
-    {id:'b-g',img:'https://images.unsplash.com/photo-1518013431117-eb1465fa5752?w=400&q=80',name:'Batata Frita G',desc:'Generosa — para compartilhar ou não',price:22.99},
+    {id:'b-p',img:'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&q=80',name:'Batata Frita P',desc:'Porção individual, crocante e sequinha',price:12.99},
+    {id:'b-m',img:'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400&q=80',name:'Batata Frita M',desc:'Para matar a fome com estilo',price:17.99},
+    {id:'b-g',img:'https://images.unsplash.com/photo-1518013431117-eb1465fa5752?w=400&q=80',name:'Batata Frita G',desc:'Generosa — para compartilhar ou não',price:24.99},
   ],
   adicionais:[
-    {id:'ad-ch',img:'imagens/molhocheddar.jpg',name:'Cheddar',desc:'Molho cremoso e irresistível',price:3.99},
-    {id:'ad-ba',img:'imagens/bacon.jpg',name:'Bacon',desc:'Pedaços crocantes e defumados',price:3.99},
-    {id:'ad-qu',img:'https://images.pexels.com/photos/821365/pexels-photo-821365.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',name:'Queijo',desc:'Queijo especial da casa',price:3.99},
-    {id:'ad-ca',img:'imagens/calabresa.jpg',name:'Calabresa',desc:'Temperada com toque apimentado',price:3.99},
+    {id:'ad-ch',img:'imagens/molhocheddar.jpg',name:'Cheddar',desc:'Molho cremoso e irresistível',price:5.00},
+    {id:'ad-ba',img:'imagens/bacon.jpg',name:'Bacon',desc:'Pedaços crocantes e defumados',price:5.00},
+    {id:'ad-qu',img:'https://images.pexels.com/photos/821365/pexels-photo-821365.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',name:'Queijo',desc:'Queijo especial da casa',price:5.00},
+    {id:'ad-ca',img:'imagens/calabresa.jpg',name:'Calabresa',desc:'Temperada com toque apimentado',price:5.00},
   ],
   bebidas:[
     {id:'be-cl',img:'imagens/coca-lata.jpg',name:'Coca-Cola Lata 350ml',desc:'Gelada, do jeito certo',price:7.99},
